@@ -744,6 +744,7 @@ func WithOpenbankingIntentID(intentID string, acr []string) AuthorizeOption {
 			"nonce": csrf.Nonce,
 			"state": csrf.State,
 			"aud": c.Config.IssuerURL.String(),
+			"iss": c.Config.ClientID,
 			"nbf":   time.Now().Unix(),
 			"claims": ClaimRequests{
 				Userinfo: map[string]*ClaimRequest{
