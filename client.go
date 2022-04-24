@@ -39,6 +39,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"gopkg.in/square/go-jose.v2"
 )
@@ -446,6 +447,7 @@ func New(cfg Config) (c Client, err error) {
 		ClientSecret: cfg.ClientSecret,
 		Scopes:       cfg.Scopes,
 		TokenURL:     cfg.GetTokenURL(),
+		AuthStyle:    oauth2.AuthStyleInParams,
 	}
 
 	c.Oauth2 = &Oauth2{
@@ -453,7 +455,7 @@ func New(cfg Config) (c Client, err error) {
 			cfg.IssuerURL.Host,
 			c.apiPathPrefix(cfg.VanityDomainType, "/%s/%s"),
 			[]string{cfg.IssuerURL.Scheme},
-			NewAuthenticator(cc, c.c),
+			c.c,
 		).WithOpenTracing(), nil),
 	}
 
