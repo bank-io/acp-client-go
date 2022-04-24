@@ -745,6 +745,8 @@ func WithOpenbankingIntentID(intentID string, acr []string) AuthorizeOption {
 			"state": csrf.State,
 			"aud": c.Config.IssuerURL.String(),
 			"iss": c.Config.ClientID,
+			"code_challenge": v.Get("code_challenge"),
+			"code_challenge_method": v.Get("code_challenge_method"),
 			"response_type": "code id_token",
 			"client_id": c.Config.ClientID,
 			"nbf":   time.Now().Unix(),
