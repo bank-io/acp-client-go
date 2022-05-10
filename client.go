@@ -208,6 +208,7 @@ type Config struct {
 }
 
 func (c *Config) GetTokenURL() string {
+	fmt.Println("GetTokenURL", c.TokenURL.String(), " ", c.IssuerURL.String())
 	if c.TokenURL != nil {
 		return c.TokenURL.String()
 	}
@@ -450,11 +451,16 @@ func New(cfg Config) (c Client, err error) {
 		AuthStyle:    oauth2.AuthStyleInParams,
 	}
 
+	tokenURL, err := url.Parse(cfg.GetTokenURL())
+	if err != nil {
+		return c, err
+	}
+
 	c.Oauth2 = &Oauth2{
 		Acp: o2Client.New(httptransport.NewWithClient(
-			cfg.IssuerURL.Host,
+			tokenURL.Host,
 			c.apiPathPrefix(cfg.VanityDomainType, "/%s/%s"),
-			[]string{cfg.IssuerURL.Scheme},
+			[]string{tokenURL.Scheme},
 			c.c,
 		).WithOpenTracing(), nil),
 	}
@@ -742,16 +748,16 @@ func WithOpenbankingIntentID(intentID string, acr []string) AuthorizeOption {
 		}
 
 		claims := jwt.MapClaims{
-			"exp":   time.Now().Add(requestObjectExpiration).Unix(),
-			"nonce": csrf.Nonce,
-			"state": csrf.State,
-			"aud": c.Config.IssuerURL.String(),
-			"iss": c.Config.ClientID,
-			"code_challenge": v.Get("code_challenge"),
+			"exp":                   time.Now().Add(requestObjectExpiration).Unix(),
+			"nonce":                 csrf.Nonce,
+			"state":                 csrf.State,
+			"aud":                   c.Config.IssuerURL.String(),
+			"iss":                   c.Config.ClientID,
+			"code_challenge":        v.Get("code_challenge"),
 			"code_challenge_method": v.Get("code_challenge_method"),
-			"response_type": "code id_token",
-			"client_id": c.Config.ClientID,
-			"nbf":   time.Now().Unix(),
+			"response_type":         "code id_token",
+			"client_id":             c.Config.ClientID,
+			"nbf":                   time.Now().Unix(),
 			"claims": ClaimRequests{
 				Userinfo: map[string]*ClaimRequest{
 					"openbanking_intent_id": {
